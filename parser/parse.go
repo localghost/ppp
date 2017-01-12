@@ -22,6 +22,12 @@ func merge(dest map[string]interface{}, src map[string]interface{}) {
 // TODO: Verify there won't be problems with too deep recursion.
 func walk(ctx *context, raw interface{}) error {
 	switch node := raw.(type) {
+	case []interface{}:
+		for _, v := range node {
+			if err := walk(ctx, v); err != nil {
+				return err
+			}
+		}
 	case map[string]interface{}:
 		for k, v := range node {
 			if transformation, ok := transformations[k]; ok {
