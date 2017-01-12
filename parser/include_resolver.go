@@ -11,7 +11,8 @@ import (
 	//"reflect"
 )
 
-const includeTag = "_include"
+// FIXME: tag should be defined in one place only
+const includeTag = "ppp-inline"
 
 type includeResolverConfig struct {
 	// Base path for includes specified with relative path.
@@ -22,24 +23,6 @@ type includeResolver struct {
 	config *includeResolverConfig
 
 	result map[string]interface{}
-}
-
-func resolveIncludeInPlace(config *includeResolverConfig, data map[string]interface{}) error {
-	resolver := includeResolver{config: config, result: data}
-
-	var errs error
-	// Loop to resolve nested includes.
-	// TODO Add discovering include cycles.
-	for include, ok := data[includeTag]; ok; {
-		delete(data, includeTag)
-
-		err := resolver.resolve(include)
-		if err != nil {
-			errs = multierror.Append(errs, err)
-		}
-		include, ok = data[includeTag]
-	}
-	return errs
 }
 
 func (resolver *includeResolver) resolve(include interface{}) error {

@@ -22,6 +22,7 @@ func decode(path string) (interface{}, error) {
 	return result, nil
 }
 
+// TODO: Add tests for: inline being an array, nested inlines.
 func TestInline(t *testing.T) {
 	actual, err := ParseFile("./test-fixtures/01-main.json")
 	if err != nil {
