@@ -58,3 +58,7 @@ Command:
 ppp ubuntu-virtualbox.json | packer build -
 ppp ubuntu-vmware.json | packer build -
 ```
+
+## Status
+
+https://api.travis-ci.org/localghost/ppp.svg?branch=master
