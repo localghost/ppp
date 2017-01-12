@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/localghost/packer-pp/parser"
+	"github.com/localghost/ppp/parser"
 	"os"
 	"encoding/json"
 )
