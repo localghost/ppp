@@ -14,7 +14,6 @@ func main() {
 	}
 
 	templatePath := os.Args[1]
-	//result, err := parser.ParseFile(templatePath)
 	result, err := parser.NewParser().ParseFile(templatePath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
