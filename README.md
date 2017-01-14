@@ -62,3 +62,4 @@ ppp ubuntu-vmware.json | packer build -
 ## Status
 
 [![Build Status](https://travis-ci.org/localghost/ppp.svg?branch=master)](https://travis-ci.org/localghost/ppp)
+[![Go Report Card](https://goreportcard.com/badge/github.com/localghost/ppp)](https://goreportcard.com/report/github.com/localghost/ppp)
