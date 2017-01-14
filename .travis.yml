@@ -17,5 +17,5 @@ deploy:
   skip_cleanup: true
   on:
     repo: localghost/ppp
-    go: 1.7.x
+    go: 1.7.4
     tags: true
