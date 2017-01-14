@@ -16,5 +16,4 @@ deploy:
   file: ppp.gz
   on:
     repo: localghost/ppp
-    tags: true
     go: 1.7.x
