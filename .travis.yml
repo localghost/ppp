@@ -2,12 +2,12 @@ language: go
 
 go:
 - 1.6.x
-- 1.7.x
+- 1.7.4
 
 before_deploy:
 - echo `pwd`
 - go build
-- gzip ppp
+- cat ppp | gzip ppp-$TRAVIS_TAG.gz
 
 deploy:
   provider: releases
