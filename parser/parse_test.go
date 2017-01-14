@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 	"reflect"
+	"path/filepath"
 )
 
 func decode(path string) (interface{}, error) {
@@ -22,19 +23,36 @@ func decode(path string) (interface{}, error) {
 	return result, nil
 }
 
-// TODO: Add tests for: inline being an array, nested inlines.
+var testCases = []struct {
+	entry string
+	expected string
+}{
+	{"001-main-single-inline.json", "001-expected.json"},
+	{"002-main-array-inline.json", "002-expected.json"},
+	{"003-main-nested-inline.json", "003-expected.json"},
+	{"004-main-subdir-inline.json", "004-expected.json"},
+}
+
 func TestInline(t *testing.T) {
-	actual, err := ParseFile("./test-fixtures/01-main.json")
-	if err != nil {
-		t.Fatal(err)
+	testRunner := func (entryPath string, expectedPath string) {
+		fixtureDir := "./test-fixtures"
+
+		actual, err := NewParser().ParseFile(filepath.Join(fixtureDir, entryPath))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		expected, err := decode(filepath.Join(fixtureDir, expectedPath))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !reflect.DeepEqual(expected, actual) {
+			t.Fatal(expected, actual)
+		}
 	}
 
-	expected, err := decode("./test-fixtures/01-expected.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !reflect.DeepEqual(expected, actual) {
-		t.Fatal(expected, actual)
+	for _, tc := range testCases {
+		testRunner(tc.entry, tc.expected)
 	}
 }

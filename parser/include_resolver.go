@@ -1,18 +1,11 @@
 package parser
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/go-multierror"
-	//"github.com/mitchellh/mapstructure"
-	"os"
 	"path/filepath"
-	//"reflect"
 )
-
-// FIXME: tag should be defined in one place only
-const includeTag = "ppp-inline"
 
 type includeResolverConfig struct {
 	// Base path for includes specified with relative path.
@@ -52,24 +45,11 @@ func (resolver *includeResolver) includeFromFiles(paths []interface{}) error {
 }
 
 func (resolver *includeResolver) includeFromFile(path string) error {
-	file, err := os.Open(resolver.resolvePath(path))
+	result, err := NewParser().ParseFile(resolver.resolvePath(path))
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-
-	var content interface{}
-	if err := json.NewDecoder(file).Decode(&content); err != nil {
-		return err
-	}
-
-	contentMapView, ok := content.(map[string]interface{})
-	if !ok {
-		return errors.New(fmt.Sprintf("Included content is not a JSON object"))
-	}
-
-	resolver.include(contentMapView)
-
+	resolver.include(result.(map[string]interface{}))
 	return nil
 }
 
@@ -82,33 +62,9 @@ func (resolver *includeResolver) resolvePath(path string) string {
 
 func (resolver *includeResolver) include(src map[string]interface{}) {
 	for srcKey, srcValue := range src {
-		if destValue, ok := resolver.result[srcKey]; !ok {
-			// Do not overwrite value if it is already present (mitigates the risk of accidentally overwriting
-			// values defined in base template by values from included templates). As a side effect, it makes
-			// ordering of includes important.
+		if _, ok := resolver.result[srcKey]; !ok {
+			// Do not overwrite a value if it is already there. It makes ordering of includes important.
 			resolver.result[srcKey] = srcValue
-		} else {
-			if srcKey == includeTag {
-				// Gather include paths from all included templates.
-				resolver.result[srcKey] = appendAny(toSlice(&destValue), srcValue)
-			}
 		}
-	}
-}
-
-func toSlice(value *interface{}) []interface{} {
-	result, ok := (*value).([]interface{})
-	if !ok {
-		result = []interface{}{*value}
-	}
-	return result
-}
-
-func appendAny(dest []interface{}, value interface{}) []interface{} {
-	switch value := value.(type) {
-	case []interface{}:
-		return append(dest, value...)
-	default:
-		return append(dest, value)
 	}
 }

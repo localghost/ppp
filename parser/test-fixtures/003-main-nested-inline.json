@@ -1,0 +1,4 @@
+{
+  "one": 1,
+  "ppp-inline": ["003-inline.json", "subdir/003-inline.json"]
+}

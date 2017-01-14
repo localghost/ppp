@@ -6,8 +6,12 @@ import (
 
 type transformation func(*context, interface{}) (interface{}, error)
 
-var transformations = map[string]transformation{
-	"ppp-inline": inlineTransformation,
+var transformations map[string]transformation
+
+func init() {
+	transformations = map[string]transformation{
+		"ppp-inline": inlineTransformation,
+	}
 }
 
 func inlineTransformation(ctx *context, data interface{}) (interface{}, error) {
