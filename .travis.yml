@@ -5,6 +5,7 @@ go:
 - 1.7.x
 
 before_deploy:
+- echo `pwd`
 - go build
 - gzip ppp
 
@@ -15,3 +16,5 @@ deploy:
   file: ppp.gz
   on:
     repo: localghost/ppp
+    tags: true
+    go: 1.7.x
