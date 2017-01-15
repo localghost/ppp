@@ -85,13 +85,3 @@ func (p *parser) walk(raw interface{}) error {
 	}
 	return nil
 }
-
-func merge(dest map[string]interface{}, src map[string]interface{}) {
-	for k, v := range src {
-		if _, ok := dest[k]; !ok {
-			// Do not overwrite value if it is already present (mitigates the risk of accidentally overwriting
-			// values defined in the containings template by values from included templates).
-			dest[k] = v
-		}
-	}
-}

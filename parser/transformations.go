@@ -14,15 +14,15 @@ func init() {
 	}
 }
 
-func inlineTransformation(ctx *context, data interface{}) (interface{}, error) {
-	resolver := &includeResolver{
-		config: &includeResolverConfig{basePath: filepath.Dir(ctx.templatePath)},
+func inlineTransformation(ctx *context, path interface{}) (interface{}, error) {
+	inliner := &inliner{
+		config: &inlinerConfig{basePath: filepath.Dir(ctx.templatePath)},
 		result: make(map[string]interface{}),
 	}
 
-	if err := resolver.resolve(data); err != nil {
+	if err := inliner.inline(path); err != nil {
 		return nil, err
 	}
 
-	return resolver.result, nil
+	return inliner.result, nil
 }
