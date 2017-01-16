@@ -2,9 +2,11 @@ package parser
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type context struct {
@@ -34,7 +36,7 @@ func (p *parser) ParseFile(path string) (interface{}, error) {
 	}
 
 	p.context = &context{templatePath: path}
-	defer func (contextPtr **context) { contextPtr = nil }(&p.context)
+	defer func(contextPtr **context) { contextPtr = nil }(&p.context)
 
 	return p.parse(f)
 }
@@ -56,7 +58,16 @@ func (p *parser) parse(reader io.Reader) (interface{}, error) {
 func (p *parser) walk(raw interface{}) error {
 	switch node := raw.(type) {
 	case []interface{}:
-		for _, v := range node {
+		for i, v := range node {
+			action := p.tryParseAction(v)
+			if action != nil {
+				newValue, err := p.callAction(action)
+				if err != nil {
+					return err
+				}
+				node[i] = newValue
+			}
+
 			if err := p.walk(v); err != nil {
 				return err
 			}
@@ -78,10 +89,40 @@ func (p *parser) walk(raw interface{}) error {
 				return p.walk(raw)
 			}
 
+			action := p.tryParseAction(v)
+			if action != nil {
+				newValue, err := p.callAction(action)
+				if err != nil {
+					return err
+				}
+				node[k] = newValue
+			}
+
 			if err := p.walk(v); err != nil {
 				return err
 			}
 		}
 	}
 	return nil
+}
+
+func (p *parser) tryParseAction(value interface{}) []string {
+	switch value := value.(type) {
+	case string:
+		if strings.HasPrefix(value, "ppp-") {
+			return strings.SplitN(value, ":", 2)
+		}
+	}
+	return nil
+}
+
+func (p *parser) callAction(action []string) (interface{}, error) {
+	name := action[0]
+	body := getIndexOr(action, 1, "").(string)
+
+	if handler, ok := actions[name]; ok {
+		return handler(p.context, body)
+	}
+
+	return nil, fmt.Errorf("Action %s is not supported", name)
 }
