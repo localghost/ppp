@@ -31,9 +31,11 @@ var testCases = []struct {
 	{"002-main-array-inline.json", "002-expected.json"},
 	{"003-main-nested-inline.json", "003-expected.json"},
 	{"004-main-subdir-inline.json", "004-expected.json"},
+	{"005-main-action-shell-single.json", "005-expected.json"},
+	{"006-main-action-shell-array.json", "006-expected.json"},
 }
 
-func TestInline(t *testing.T) {
+func TestRunner(t *testing.T) {
 	testRunner := func (entryPath string, expectedPath string) {
 		fixtureDir := "./test-fixtures"
 

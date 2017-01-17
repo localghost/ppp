@@ -56,54 +56,70 @@ func (p *parser) parse(reader io.Reader) (interface{}, error) {
 
 // TODO: Verify there won't be problems with too deep recursion.
 func (p *parser) walk(raw interface{}) error {
+	var err error
 	switch node := raw.(type) {
 	case []interface{}:
-		for i, v := range node {
-			action := p.tryParseAction(v)
-			if action != nil {
-				newValue, err := p.callAction(action)
-				if err != nil {
-					return err
-				}
-				node[i] = newValue
-			}
-
-			if err := p.walk(v); err != nil {
-				return err
-			}
-		}
+		err = p.walkArray(node)
 	case map[string]interface{}:
-		for k, v := range node {
-			if transformation, ok := transformations[k]; ok {
-				delete(node, k)
+		err = p.walkObject(node)
+	}
+	return err
+}
 
-				data, err := transformation(p.context, v)
-				if err != nil {
-					return err
-				}
-				if data != nil {
-					merge(node, data.(map[string]interface{}))
-				}
+func (p *parser) walkArray(array []interface{}) error {
+	for i, v := range array {
+		newValue, err := p.tryCallAction(v)
+		if err != nil {
+			return err
+		} else if newValue != nil {
+			array[i] = newValue
+		}
 
-				// Transformation changes the template, walk must be restarted.
-				return p.walk(raw)
-			}
-
-			action := p.tryParseAction(v)
-			if action != nil {
-				newValue, err := p.callAction(action)
-				if err != nil {
-					return err
-				}
-				node[k] = newValue
-			}
-
-			if err := p.walk(v); err != nil {
-				return err
-			}
+		if err := p.walk(v); err != nil {
+			return err
 		}
 	}
 	return nil
+}
+
+func (p* parser) walkObject(object map[string]interface{}) error {
+	for k, v := range object {
+		if transformation, ok := transformations[k]; ok {
+			delete(object, k)
+
+			data, err := transformation(p.context, v)
+			if err != nil {
+				return err
+			}
+			if data != nil {
+				merge(object, data.(map[string]interface{}))
+			}
+
+			// Transformation changes the template, walk must be restarted.
+			return p.walkObject(object)
+		}
+
+		newValue, err := p.tryCallAction(v)
+		if err != nil {
+			return err
+		} else if newValue != nil {
+			object[k] = newValue
+		}
+
+		if err := p.walk(v); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (p *parser) tryCallAction(value interface{}) (interface{}, error) {
+	action := p.tryParseAction(value)
+	if action == nil {
+		return nil, nil
+	}
+	return p.callAction(action)
 }
 
 func (p *parser) tryParseAction(value interface{}) []string {
