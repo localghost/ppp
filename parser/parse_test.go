@@ -23,38 +23,56 @@ func decode(path string) (interface{}, error) {
 	return result, nil
 }
 
-var testCases = []struct {
-	entry string
+type testCase struct {
+	tested string
 	expected string
-}{
-	{"001-main-single-inline.json", "001-expected.json"},
-	{"002-main-array-inline.json", "002-expected.json"},
-	{"003-main-nested-inline.json", "003-expected.json"},
-	{"004-main-subdir-inline.json", "004-expected.json"},
-	{"005-main-action-shell-single.json", "005-expected.json"},
-	{"006-main-action-shell-array.json", "006-expected.json"},
 }
 
-func TestRunner(t *testing.T) {
-	testRunner := func (entryPath string, expectedPath string) {
-		fixtureDir := "./test-fixtures"
+func runTest(t *testing.T, tc *testCase) {
+	fixtureDir := "./test-fixtures"
 
-		actual, err := NewParser().ParseFile(filepath.Join(fixtureDir, entryPath))
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		expected, err := decode(filepath.Join(fixtureDir, expectedPath))
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if !reflect.DeepEqual(expected, actual) {
-			t.Fatal(expected, actual)
-		}
+	actual, err := NewParser().ParseFile(filepath.Join(fixtureDir, tc.tested))
+	if err != nil {
+		t.Fatal(err)
 	}
 
+	expected, err := decode(filepath.Join(fixtureDir, tc.expected))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Fatal(expected, actual)
+	}
+}
+
+func runTests(t *testing.T, testCases []testCase) {
 	for _, tc := range testCases {
-		testRunner(tc.entry, tc.expected)
+		runTest(t, &tc)
 	}
+}
+
+func TestInline(t *testing.T) {
+	testCases := []testCase {
+		{"001-main-single-inline.json", "001-expected.json"},
+		{"002-main-array-inline.json", "002-expected.json"},
+		{"003-main-nested-inline.json", "003-expected.json"},
+		{"004-main-subdir-inline.json", "004-expected.json"},
+	}
+	runTests(t, testCases)
+}
+
+func TestShell(t *testing.T) {
+	testCases := []testCase {
+		{"005-main-action-shell-single.json", "005-expected.json"},
+		{"006-main-action-shell-array.json", "006-expected.json"},
+	}
+	runTests(t, testCases)
+}
+
+func TestExec(t *testing.T) {
+	testCases := []testCase {
+		{"007-main-action-exec-single.json", "007-expected.json"},
+	}
+	runTests(t, testCases)
 }
